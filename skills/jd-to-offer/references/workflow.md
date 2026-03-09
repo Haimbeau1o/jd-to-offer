@@ -8,11 +8,13 @@ Turn a JD into a reusable preparation bundle that helps the user study efficient
 
 1. Normalize the input JD into structured sections.
 2. Map the JD to the competency taxonomy and rank the top capability areas.
-3. Expand each top capability into detailed foundational subtopics, project signals, and interview signals.
+3. Run `scaffold-research` to create a case-specific research template.
 4. Browse for current resources. Prefer official docs, primary papers, and official repos.
-5. Design one flagship project that spans the top competencies and matches the role's business context.
-6. Write interview-ready assets: resume bullets, project storyline, and likely follow-up questions.
-7. Validate the output bundle.
+5. Save the web-verified findings into a YAML override file.
+6. Run `generate --resource-overrides ...` so the latest findings are merged into the resource pack.
+7. Design one flagship project that spans the top competencies and matches the role's business context.
+8. Write interview-ready assets: resume bullets, project storyline, and likely follow-up questions.
+9. Validate the output bundle.
 
 ## Browsing Guidance
 

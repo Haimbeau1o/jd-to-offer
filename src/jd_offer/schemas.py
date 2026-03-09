@@ -50,6 +50,17 @@ class ResourceEntry(BaseModel):
     tags: list[str] = Field(default_factory=list)
     why: str
     verified_on: str
+    verified_source: str | None = None
+    evidence: str | None = None
+    priority: int = 100
+
+
+class ResearchOverrideBundle(BaseModel):
+    case_slug: str | None = None
+    verified_on: str | None = None
+    notes: str | None = None
+    top_competencies: list[str] = Field(default_factory=list)
+    resources: list[ResourceEntry] = Field(default_factory=list)
 
 
 class ProjectTemplate(BaseModel):

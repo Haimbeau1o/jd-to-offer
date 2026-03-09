@@ -1,5 +1,5 @@
 case_slug: didi-agent-algorithm
-generated_at: '2026-03-09T15:35:26.789761+00:00'
+generated_at: '2026-03-09T15:55:13.759719+00:00'
 source_jd: examples/didi_2026_agent_jd.md
 company: didi
 role: agent-algorithm
@@ -18,3 +18,4 @@ files:
   interview_assets: 05_interview_assets.md
 extra:
   project_template: vertical_agent_posttraining
+  resource_overrides: examples/didi_2026_verified_resources.yaml

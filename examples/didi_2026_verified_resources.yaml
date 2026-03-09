@@ -1,0 +1,33 @@
+case_slug: didi-agent-algorithm
+verified_on: "2026-03-09"
+notes: 这些资源由 agent 联网核对后写入，用于覆盖或补充静态资源表。
+top_competencies:
+  - agent_system_design
+  - post_training_alignment
+  - rl_and_reward_design
+  - frontier_reasoning_methods
+resources:
+  - id: autogen-agentchat-dev
+    title: AgentChat — AutoGen
+    url: https://microsoft.github.io/autogen/dev/user-guide/agentchat-user-guide/index.html
+    source_type: official_docs
+    tags:
+      - frontier_reasoning_methods
+      - agent_system_design
+    why: 官方多智能体入口，覆盖 AgentChat、Swarm、GraphFlow、Memory 等模式，适合补岗位中的多智能体协作与记忆设计。
+    verified_on: "2026-03-09"
+    verified_source: microsoft.github.io/autogen/dev
+    evidence: 页面列出了 AgentChat、Swarm、GraphFlow 和 Memory 等模块。
+    priority: 10
+  - id: trl-docs
+    title: TRL Documentation
+    url: https://huggingface.co/docs/trl/en/index
+    source_type: official_docs
+    tags:
+      - post_training_alignment
+      - rl_and_reward_design
+    why: 当前官方文档已同时列出 SFTTrainer、DPOTrainer、GRPOTrainer 和 PPOTrainer，适合岗位中的后训练主线。
+    verified_on: "2026-03-09"
+    verified_source: huggingface.co/docs/trl/en/index
+    evidence: 首页离线方法含 SFTTrainer 与 DPOTrainer，在线方法含 GRPOTrainer 与 PPOTrainer。
+    priority: 5

@@ -1,0 +1,11 @@
+case_slug: null
+verified_on: '2026-03-09'
+notes: 根据《滴滴26届春招-算法工程师（供需策略）》生成的联网研究模板。先用 agent 浏览官方文档/一手论文，再把资源填回这里。
+top_competencies:
+- rl_and_reward_design
+- agent_system_design
+- post_training_alignment
+- frontier_reasoning_methods
+- ride_hailing_supply_demand
+- training_inference_stack
+resources: []

@@ -22,6 +22,8 @@ def test_generate_didi_case(tmp_path: Path) -> None:
             "agent-algorithm",
             "--outdir",
             str(outdir),
+            "--resource-overrides",
+            "examples/didi_2026_verified_resources.yaml",
         ],
     )
     assert result.exit_code == 0
@@ -30,3 +32,4 @@ def test_generate_didi_case(tmp_path: Path) -> None:
     assert (outdir / "03_resource_pack.md").exists()
     assert (outdir / "04_project_blueprint.md").exists()
     assert (outdir / "05_interview_assets.md").exists()
+    assert "AgentChat — AutoGen" in (outdir / "03_resource_pack.md").read_text(encoding="utf-8")

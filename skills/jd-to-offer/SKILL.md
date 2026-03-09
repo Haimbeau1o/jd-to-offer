@@ -11,11 +11,12 @@ Use this skill to turn a JD into a reusable preparation bundle. Combine local de
 
 ## Workflow
 
-1. Run `skills/jd-to-offer/scripts/run_case.py` or `python -m jd_offer.cli generate ...` to parse the JD and scaffold the five required output files.
-2. Inspect the generated competency map and knowledge system. If the JD is domain-specific, refine the emphasis manually instead of rewriting the whole bundle.
-3. Browse the web for current high-quality resources. Prefer official docs, official repos, and primary papers. Refresh stale links before finalizing the resource pack.
-4. Upgrade the project blueprint so it is demoable, technically coherent, and aligned with the top-ranked competencies.
-5. Validate the output folder with `skills/jd-to-offer/scripts/validate_case.py`.
+1. Run `python skills/jd-to-offer/scripts/run_case.py scaffold-research ...` or `python -m jd_offer.cli scaffold-research ...` to create a per-case research template.
+2. Browse the web for current high-quality resources. Prefer official docs, official repos, and primary papers.
+3. Save the verified resources into a YAML override file that follows the scaffolded template shape.
+4. Run `python skills/jd-to-offer/scripts/run_case.py generate ... --resource-overrides <path>` to inject the latest resources into the output bundle.
+5. Inspect the generated competency map and project blueprint. If the JD is domain-specific, refine the emphasis manually instead of rewriting the whole bundle.
+6. Validate the output folder with `skills/jd-to-offer/scripts/validate_case.py`.
 
 ## Required Output Bundle
 
@@ -37,6 +38,7 @@ Load `references/output_contract.md` if you need the exact file contract.
 - Prefer primary papers over derivative summaries for methods such as CoT, ReAct, PPO, DPO, or GRPO.
 - Mark in the resource pack why each resource matters for the JD instead of dumping a long link list.
 - If the JD is business-specific, include at least one primary or official resource that grounds the business domain.
+- Keep the latest web findings in an override YAML so the generation pipeline stays reproducible.
 
 ## Project Design Rules
 
@@ -48,7 +50,7 @@ Load `references/output_contract.md` if you need the exact file contract.
 
 ## Scripts
 
-- `scripts/run_case.py`: wrapper around the local CLI to generate a case bundle
+- `scripts/run_case.py`: wrapper around the local CLI to scaffold research templates and generate a case bundle
 - `scripts/validate_case.py`: verify the output folder contains the required files
 
 ## References

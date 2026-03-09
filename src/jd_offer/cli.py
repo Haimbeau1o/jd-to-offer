@@ -12,10 +12,12 @@ from jd_offer.project_templates import (
     build_knowledge_system,
     build_project_blueprint,
     build_resource_pack,
+    load_resource_registry,
     select_project_template,
     select_resources,
 )
 from jd_offer.renderer import render_case_bundle
+from jd_offer.research import load_resource_overrides, merge_resources, scaffold_research_template
 from jd_offer.taxonomy import map_jd_to_competencies
 
 app = typer.Typer(help="Generate knowledge and project bundles from a JD.")
@@ -45,11 +47,19 @@ def generate(
     taxonomy: Path = typer.Option(DEFAULT_TAXONOMY_PATH, exists=True, file_okay=True, dir_okay=False, help="Competency taxonomy YAML."),
     resources: Path = typer.Option(DEFAULT_RESOURCE_REGISTRY_PATH, exists=True, file_okay=True, dir_okay=False, help="Resource registry YAML."),
     templates: Path = typer.Option(DEFAULT_PROJECT_TEMPLATES_PATH, exists=True, file_okay=True, dir_okay=False, help="Project templates YAML."),
+    resource_overrides: Path | None = typer.Option(None, exists=True, file_okay=True, dir_okay=False, help="Optional per-case research overrides YAML."),
 ) -> None:
     jd = parse_jd_markdown(input)
     competency_map = map_jd_to_competencies(jd, taxonomy)
     project_template = select_project_template(competency_map, templates)
-    resource_entries = select_resources(competency_map, resources)
+
+    base_resources = load_resource_registry(resources)
+    if resource_overrides is not None:
+        override_resources = load_resource_overrides(resource_overrides)
+        merged_resources = merge_resources(base_resources, override_resources)
+    else:
+        merged_resources = base_resources
+    resource_entries = select_resources(competency_map, merged_resources)
 
     payload = {
         "jd_decomposition": build_jd_decomposition(jd, competency_map),
@@ -67,9 +77,24 @@ def generate(
         company=company,
         role=role,
         competencies=competency_map.top_names,
-        extra={"project_template": project_template.id},
+        extra={
+            "project_template": project_template.id,
+            "resource_overrides": str(resource_overrides) if resource_overrides else None,
+        },
     )
     typer.echo(f"Generated case bundle at {outdir}")
+
+
+@app.command("scaffold-research")
+def scaffold_research(
+    input: Path = typer.Option(..., exists=True, file_okay=True, dir_okay=False, help="Path to JD markdown file."),
+    outpath: Path = typer.Option(..., file_okay=True, dir_okay=False, help="Path to write the research override template."),
+    taxonomy: Path = typer.Option(DEFAULT_TAXONOMY_PATH, exists=True, file_okay=True, dir_okay=False, help="Competency taxonomy YAML."),
+) -> None:
+    jd = parse_jd_markdown(input)
+    competency_map = map_jd_to_competencies(jd, taxonomy)
+    scaffold_research_template(jd, competency_map, outpath)
+    typer.echo(f"Wrote research template to {outpath}")
 
 
 def main() -> None:

@@ -31,21 +31,21 @@ def select_project_template(competencies: CompetencyMap, path: Path) -> ProjectT
     return ranked[0][1]
 
 
-def select_resources(competencies: CompetencyMap, path: Path) -> list[ResourceEntry]:
-    resources = load_resource_registry(path)
+def select_resources(competencies: CompetencyMap, resources: Path | list[ResourceEntry]) -> list[ResourceEntry]:
+    resource_list = load_resource_registry(resources) if isinstance(resources, Path) else list(resources)
     desired_tags = set()
     for competency in competencies.items[:5]:
         desired_tags.add(competency.name)
         desired_tags.update(competency.resource_tags)
 
     picked: list[ResourceEntry] = []
-    for resource in resources:
+    for resource in resource_list:
         if desired_tags.intersection(resource.tags):
             picked.append(resource)
 
     seen: set[str] = set()
     unique: list[ResourceEntry] = []
-    for resource in picked:
+    for resource in sorted(picked, key=lambda item: (item.priority, item.title.lower())):
         if resource.id in seen:
             continue
         seen.add(resource.id)
@@ -171,7 +171,12 @@ def build_resource_pack(competencies: CompetencyMap, resources: list[ResourceEnt
         lines.append(f"## {section}")
         lines.append("")
         for resource in items:
-            lines.append(f"- [{resource.title}]({resource.url})｜{resource.source_type}｜{resource.why}｜verified {resource.verified_on}")
+            detail = f"- [{resource.title}]({resource.url})｜{resource.source_type}｜{resource.why}｜verified {resource.verified_on}"
+            if resource.verified_source:
+                detail += f"｜source {resource.verified_source}"
+            lines.append(detail)
+            if resource.evidence:
+                lines.append(f"  - evidence: {resource.evidence}")
         lines.append("")
 
     return "\n".join(lines).strip() + "\n"

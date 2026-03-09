@@ -1,0 +1,4 @@
+interface:
+  display_name: "JD to Offer"
+  short_description: "Turn a JD into a study plan and project."
+  default_prompt: "Analyze this JD, derive the required competencies, browse for current primary resources, and generate a knowledge system, flagship project blueprint, and interview assets."

@@ -1,0 +1,92 @@
+resources:
+  - id: pytorch-docs
+    title: PyTorch Stable Documentation
+    url: https://docs.pytorch.org/docs/stable/index.html
+    source_type: official_docs
+    tags: [training_inference_stack]
+    why: 覆盖 autograd、AMP、distributed 等训练基础，是补齐 PyTorch 工程能力的首选入口。
+    verified_on: "2026-03-09"
+  - id: megatron-lm
+    title: NVIDIA Megatron-LM
+    url: https://github.com/NVIDIA/Megatron-LM
+    source_type: official_repo
+    tags: [training_inference_stack]
+    why: 训练并行、Megatron Core 与 post_training 目录都可直接对照岗位中的训练全流程要求。
+    verified_on: "2026-03-09"
+  - id: deepspeed-tutorials
+    title: DeepSpeed Tutorials
+    url: https://www.deepspeed.ai/tutorials/
+    source_type: official_docs
+    tags: [training_inference_stack]
+    why: 适合补齐 ZeRO、长序列、推理和性能调优等工程问题。
+    verified_on: "2026-03-09"
+  - id: trl-docs
+    title: TRL Documentation
+    url: https://huggingface.co/docs/trl/en/index
+    source_type: official_docs
+    tags: [post_training_alignment, rl_and_reward_design]
+    why: 当前官方文档已覆盖 SFT、DPO、GRPO、Reward Modeling 等 trainer，是后训练上手最快的主入口。
+    verified_on: "2026-03-09"
+  - id: vllm-docs
+    title: vLLM Documentation
+    url: https://docs.vllm.ai/
+    source_type: official_docs
+    tags: [training_inference_stack, serving]
+    why: 官方首页直接覆盖 OpenAI-compatible serving、continuous batching、PagedAttention、prefix caching 等能力。
+    verified_on: "2026-03-09"
+  - id: sglang-docs
+    title: SGLang Documentation
+    url: https://docs.sglang.ai/
+    source_type: official_docs
+    tags: [training_inference_stack, serving]
+    why: 官方文档覆盖高性能 serving、OpenAI-compatible API、tool parser、structured outputs 等对 Agent 很关键的能力。
+    verified_on: "2026-03-09"
+  - id: cot-paper
+    title: Chain-of-Thought Prompting Elicits Reasoning in Large Language Models
+    url: https://arxiv.org/abs/2201.11903
+    source_type: primary_paper
+    tags: [frontier_reasoning_methods, react_reasoning]
+    why: CoT 是岗位里多步推理与 reasoning 方法的经典基线论文。
+    verified_on: "2026-03-09"
+  - id: react-paper
+    title: "ReAct: Synergizing Reasoning and Acting in Language Models"
+    url: https://arxiv.org/abs/2210.03629
+    source_type: primary_paper
+    tags: [agent_system_design, frontier_reasoning_methods, react_reasoning]
+    why: ReAct 是工具调用型 Agent 的核心一手论文，和 JD 高度贴合。
+    verified_on: "2026-03-09"
+  - id: ppo-paper
+    title: Proximal Policy Optimization Algorithms
+    url: https://arxiv.org/abs/1707.06347
+    source_type: primary_paper
+    tags: [rl_and_reward_design, rlhf]
+    why: PPO 是理解 RLHF/RLAIF 训练路径的基础算法论文。
+    verified_on: "2026-03-09"
+  - id: dpo-paper
+    title: "Direct Preference Optimization: Your Language Model is Secretly a Reward Model"
+    url: https://arxiv.org/abs/2305.18290
+    source_type: primary_paper
+    tags: [post_training_alignment, rl_and_reward_design, rlhf]
+    why: DPO 是当前面试里高频被问的偏好优化方法，需要直接读原论文。
+    verified_on: "2026-03-09"
+  - id: grpo-paper
+    title: DeepSeekMath
+    url: https://arxiv.org/abs/2402.03300
+    source_type: primary_paper
+    tags: [post_training_alignment, rl_and_reward_design]
+    why: 开源社区常用它来理解 GRPO 的实践路线与可验证奖励训练思路。
+    verified_on: "2026-03-09"
+  - id: didi-dispatch-paper
+    title: "Large-Scale Order Dispatch in On-Demand Ride-Sharing Platforms: A Learning and Planning Approach"
+    url: https://www.kdd.org/kdd2018/accepted-papers/view/large-scale-order-dispatch-in-on-demand-ride-sharing-platforms-a-learning-a
+    source_type: primary_paper
+    tags: [ride_hailing_supply_demand, mobility_strategy]
+    why: 滴滴业务背景下的经典派单论文，有助于把 Agent 能力翻译回供需策略与业务价值。
+    verified_on: "2026-03-09"
+  - id: supply-demand-rl-paper
+    title: Supply-Demand-aware Deep Reinforcement Learning for Dynamic Fleet Management
+    url: https://dl.acm.org/doi/10.1145/3467979
+    source_type: primary_paper
+    tags: [ride_hailing_supply_demand, mobility_strategy, rl_and_reward_design]
+    why: 供需感知的 RL 论文，适合补齐司机/运力调度场景与强化学习的连接。
+    verified_on: "2026-03-09"

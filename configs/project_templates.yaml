@@ -1,0 +1,68 @@
+templates:
+  - id: vertical_agent_posttraining
+    name: DriverOps Agent Lab
+    summary: 面向司机经营问题的垂域 Agent 与后训练实验平台，覆盖意图识别、ReAct 工具调用、记忆、推荐、SFT 与偏好优化闭环。
+    use_when:
+      - agent_system_design
+      - post_training_alignment
+      - rl_and_reward_design
+      - ride_hailing_supply_demand
+    tech_stack:
+      - Python + FastAPI 服务层
+      - PyTorch + TRL 训练实验
+      - vLLM 或 SGLang 推理服务
+      - SQLite / PostgreSQL 业务数据
+      - 向量检索用于政策与规则知识库
+      - Pydantic 约束工具输入输出 schema
+    modules:
+      - Intent Router：将问题分流到 FAQ / 策略建议 / 任务执行 / 解释说明
+      - Planner / ReAct Loop：多步工具调用与失败恢复
+      - Tool Layer：司机画像、行程统计、活动中心、规则知识库、推荐引擎
+      - Memory Layer：短期会话记忆 + 长期司机画像
+      - Post-training Pipeline：SFT 数据、偏好数据、GRPO/DPO 小实验
+      - Offline Evaluator：任务完成率、工具调用正确率、解释质量与时延
+    milestones:
+      - 第 1 周：搭服务骨架、定义工具 schema、准备司机场景模拟数据
+      - 第 2 周：实现意图识别与 ReAct 主链路，接入 4-5 个核心工具
+      - 第 3 周：加入记忆层与推荐解释，补异常恢复与 fallback
+      - 第 4 周：构造多轮 SFT 样本，完成一版小模型或 LoRA 训练
+      - 第 5 周：加入偏好数据或 grouped reward，完成 DPO/GRPO 小实验
+      - 第 6 周：固化离线评测、补充架构图、形成简历与面试表达
+    metrics:
+      - Intent accuracy
+      - Tool call accuracy
+      - Task success rate
+      - Explanation coverage
+      - Response latency
+      - Driver-side business alignment notes
+    demo_scenarios:
+      - 收入解释：解释今日收入结构与影响因素
+      - 活动推荐：结合司机画像与时段推荐活动参与策略
+      - 热区建议：基于时空模式给出接单建议与风险说明
+      - 规则答疑：用检索 + tool grounding 解释司机规则和平台政策
+  - id: llm_training_platform
+    name: Post-Training Evaluation Sandbox
+    summary: 面向后训练实验的数据构造、奖励设计与离线评测平台，强调 SFT / DPO / PPO / GRPO 的对照实验。
+    use_when:
+      - post_training_alignment
+      - rl_and_reward_design
+      - training_inference_stack
+    tech_stack:
+      - Python + PyTorch
+      - TRL + DeepSpeed
+      - Lightweight evaluation dashboard
+    modules:
+      - Dataset Builder
+      - Preference Pair Generator
+      - Reward Rule Engine
+      - Offline Evaluation Bench
+    milestones:
+      - 第 1 周：准备数据 schema
+      - 第 2 周：搭建训练脚本
+      - 第 3 周：补齐评测
+    metrics:
+      - Format following rate
+      - Preference win rate
+      - Tool-call exact match
+    demo_scenarios:
+      - SFT baseline vs preference optimization comparison

@@ -1,0 +1,20 @@
+case_slug: didi-agent-algorithm
+generated_at: '2026-03-09T15:35:26.789761+00:00'
+source_jd: examples/didi_2026_agent_jd.md
+company: didi
+role: agent-algorithm
+competencies:
+- rl_and_reward_design
+- agent_system_design
+- post_training_alignment
+- frontier_reasoning_methods
+- ride_hailing_supply_demand
+- training_inference_stack
+files:
+  jd_decomposition: 01_jd_decomposition.md
+  knowledge_system: 02_knowledge_system.md
+  resource_pack: 03_resource_pack.md
+  project_blueprint: 04_project_blueprint.md
+  interview_assets: 05_interview_assets.md
+extra:
+  project_template: vertical_agent_posttraining

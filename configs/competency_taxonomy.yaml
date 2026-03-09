@@ -1,0 +1,143 @@
+competencies:
+  - name: agent_system_design
+    display_name: Agent 系统设计
+    trigger_keywords:
+      - agent
+      - 意图识别
+      - 复杂任务拆解
+      - 多步推理
+      - react
+      - 工具调用
+      - 长短期记忆
+      - 智能推荐
+      - function call
+    foundational_subtopics:
+      - Agent 基础范式：router / planner / actor / memory / evaluator
+      - ReAct 与 function calling 的适用边界
+      - 工具 schema 设计、参数填充与异常恢复
+      - 任务完成率、工具调用正确率、步骤冗余率等评测指标
+    project_signals:
+      - 需要有端到端 Agent 主链路
+      - 需要展示工具调用与记忆模块
+    interview_signals:
+      - 为什么这里需要 Agent，而不是纯 RAG？
+      - 如何避免 Agent 死循环或错误工具调用？
+    resource_tags:
+      - agent_system_design
+      - react_reasoning
+  - name: post_training_alignment
+    display_name: 后训练与对齐
+    trigger_keywords:
+      - sft
+      - rl
+      - 后训练
+      - 上下文遵循
+      - 领域问答
+      - rlhf
+      - cpt
+      - pre-train
+    foundational_subtopics:
+      - Pre-train / CPT / SFT / Preference Optimization / RL 的关系
+      - 指令数据构造与多轮样本设计
+      - 上下文遵循与格式遵循的可量化定义
+      - 训练前后离线评测方法
+    project_signals:
+      - 需要展示训练数据设计
+      - 需要展示 SFT 或偏好优化实验
+    interview_signals:
+      - 为什么先做 SFT 再做 RL？
+      - 如何定义并优化上下文遵循？
+    resource_tags:
+      - post_training_alignment
+      - rlhf
+  - name: rl_and_reward_design
+    display_name: 强化学习与奖励设计
+    trigger_keywords:
+      - 奖励函数
+      - ppo
+      - grpo
+      - dpo
+      - rlvr
+      - 强化学习
+      - 数据反馈
+      - 优化机制
+    foundational_subtopics:
+      - PPO、DPO、GRPO 的目标函数与适用边界
+      - 可验证奖励、规则奖励、模型奖励的组合方式
+      - reward hacking、长度偏差与离线评测
+      - 基于日志失败样本的数据回灌闭环
+    project_signals:
+      - 需要展示 reward 设计与失败案例
+      - 需要展示偏好数据或可验证奖励数据构造
+    interview_signals:
+      - 如何防止 reward hacking？
+      - DPO 和 PPO 的主要差异是什么？
+    resource_tags:
+      - rl_and_reward_design
+      - rlhf
+  - name: training_inference_stack
+    display_name: 训练与推理基础设施
+    trigger_keywords:
+      - pytorch
+      - megatron-lm
+      - deepspeed
+      - vllm
+      - sglang
+      - 推理框架
+      - 训练全流程
+    foundational_subtopics:
+      - PyTorch autograd、AMP、分布式训练基础
+      - ZeRO、TP、PP、DP 等并行概念
+      - vLLM / SGLang 的吞吐、时延、KV cache 与批处理机制
+      - 训练与服务接口的一致性问题
+    project_signals:
+      - 需要展示训练与推理承载层选型理由
+      - 需要展示服务接口或离线推理脚本
+    interview_signals:
+      - 为什么选 vLLM 或 SGLang？
+      - 训练框架和推理框架的职责边界是什么？
+    resource_tags:
+      - training_inference_stack
+      - serving
+  - name: frontier_reasoning_methods
+    display_name: 前沿推理方法
+    trigger_keywords:
+      - 多智能体
+      - long context
+      - cot
+      - 多步推理
+      - 国际前沿技术
+    foundational_subtopics:
+      - CoT、ReAct、Multi-Agent、Long Context 的收益与边界
+      - 推理质量与时延/成本之间的 trade-off
+      - 长上下文污染与检索替代方案
+    project_signals:
+      - 需要能解释为什么不用过度复杂的多智能体设计
+      - 需要体现方法选型依据
+    interview_signals:
+      - 多智能体什么时候有价值，什么时候是过度设计？
+      - Long Context 与检索增强各自解决什么问题？
+    resource_tags:
+      - frontier_reasoning_methods
+      - react_reasoning
+  - name: ride_hailing_supply_demand
+    display_name: 网约车供需策略理解
+    trigger_keywords:
+      - 网约车业务
+      - 司机智能助手
+      - 供需策略
+      - 司机
+      - 业务迭代
+    foundational_subtopics:
+      - 司机经营问题、活动推荐、热区建议、规则答疑等典型场景
+      - 供需平衡、司机活跃、订单响应率等业务指标
+      - 模型能力如何映射为平台效率与司机体验改进
+    project_signals:
+      - 需要项目场景贴近司机经营与供需问题
+      - 需要解释业务指标与模型指标关系
+    interview_signals:
+      - 司机侧 Agent 的核心价值指标有哪些？
+      - 供需策略场景下，为什么需要可解释推荐？
+    resource_tags:
+      - ride_hailing_supply_demand
+      - mobility_strategy

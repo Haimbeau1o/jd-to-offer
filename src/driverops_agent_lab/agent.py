@@ -148,29 +148,41 @@ class DriverOpsAgent:
                         result_summary=f"step failed: {exc}",
                     )
                 )
+                self._skip_pending_steps(state.plan)
                 break
 
             step.status = "completed"
             state.observations.append(observation)
             tool_trace.append(trace)
 
-        recommendations = context.get("recommendations", [])
-        answer = self._compose_answer(
+        recommendations = context.get("recommendations") or self._build_fallback_recommendations(context)
+        stop_reason = state.stop_reason or self._derive_stop_reason(intent=intent, context=context)
+        answer_summary = self._compose_answer_summary(
             intent=intent,
             driver_id=driver_id,
             stats=context.get("stats"),
             campaigns=context.get("campaigns"),
             policy_answers=context.get("policy_answers"),
             recommendations=recommendations,
+            stop_reason=stop_reason,
+        )
+        evidence_items = self._collect_evidence_items(state.observations)
+        risk_notes = self._build_risk_notes(
+            intent=intent,
+            context=context,
+            observations=state.observations,
+            stop_reason=stop_reason,
         )
 
-        stop_reason = state.stop_reason or self._derive_stop_reason(intent=intent, context=context)
         return AgentResponse(
             driver_id=driver_id,
             city=city,
             intent=intent,
-            answer=answer,
+            answer=answer_summary,
+            answer_summary=answer_summary,
+            evidence_items=evidence_items,
             recommendations=recommendations,
+            risk_notes=risk_notes,
             tool_trace=tool_trace,
             memory_snapshot=recent_memory,
             plan=state.plan,
@@ -227,6 +239,30 @@ class DriverOpsAgent:
         trace = ToolTrace(tool_name=step.tool_name, arguments=arguments, result_summary=summary)
         return observation, trace
 
+    def _skip_pending_steps(self, plan: list[PlanStep]) -> None:
+        for step in plan:
+            if step.status == "pending":
+                step.status = "skipped"
+
+    def _build_fallback_recommendations(self, context: dict[str, Any]) -> list[str]:
+        profile = context.get("profile")
+        if profile is None:
+            return []
+        return self.tools.recommend_strategy(
+            context["intent"],
+            profile,
+            context.get("stats"),
+            context.get("campaigns"),
+        )
+
+    def _collect_evidence_items(self, observations: list[Observation]) -> list[str]:
+        evidence_items: list[str] = []
+        for observation in observations:
+            for item in [observation.summary, *observation.evidence]:
+                if item and item not in evidence_items:
+                    evidence_items.append(item)
+        return evidence_items
+
     def _derive_stop_reason(self, intent: str, context: dict[str, Any]) -> str:
         if intent == "campaign_lookup" and not context.get("campaigns"):
             return "completed_with_partial_evidence"
@@ -236,7 +272,48 @@ class DriverOpsAgent:
                 return "completed_with_partial_evidence"
         return "completed_with_full_evidence"
 
-    def _compose_answer(self, intent: str, driver_id: str, stats, campaigns, policy_answers, recommendations: list[str]) -> str:
+    def _build_risk_notes(
+        self,
+        intent: str,
+        context: dict[str, Any],
+        observations: list[Observation],
+        stop_reason: str,
+    ) -> list[str]:
+        risk_notes: list[str] = []
+        stats = context.get("stats")
+        campaigns = context.get("campaigns") or []
+        policy_answers = context.get("policy_answers") or []
+
+        if stop_reason == "fallback_due_to_missing_data":
+            risk_notes.append("缺少关键经营数据，当前回答已切换为保守兜底建议，建议稍后重试或转人工复核。")
+        if stop_reason == "completed_with_partial_evidence" and intent == "campaign_lookup" and not campaigns:
+            risk_notes.append("当前未命中适合你的活动，活动建议仅基于司机画像生成，覆盖可能不完整。")
+        if stop_reason == "completed_with_partial_evidence" and intent == "policy_qa" and policy_answers:
+            risk_notes.append("当前仅检索到模糊规则结果，建议补充订单号、时段或判责信息后再查询。")
+        if intent == "income_explanation" and stats is not None:
+            if stats.acceptance_rate < 0.75:
+                risk_notes.append(f"接单率 {stats.acceptance_rate:.0%} 偏低，可能继续影响活动资格和收入稳定性。")
+            if stats.today_income < stats.yesterday_income:
+                risk_notes.append(
+                    f"今日收入较昨日下降 {abs(stats.today_income - stats.yesterday_income):.0f} 元，需要关注热区覆盖与高峰在线时长。"
+                )
+        if not risk_notes and any(not observation.success for observation in observations):
+            risk_notes.append("执行过程中存在失败步骤，建议补齐数据后重新生成建议。")
+        return risk_notes
+
+    def _compose_answer_summary(
+        self,
+        intent: str,
+        driver_id: str,
+        stats,
+        campaigns,
+        policy_answers,
+        recommendations: list[str],
+        stop_reason: str,
+    ) -> str:
+        if stop_reason == "fallback_due_to_missing_data":
+            fallback_tip = recommendations[0] if recommendations else "建议优先保持高峰时段稳定接单。"
+            return f"当前缺少关键经营数据，先基于已有画像给出保守建议：{fallback_tip}"
         if intent == "income_explanation" and stats is not None:
             delta = stats.today_income - stats.yesterday_income
             trend = "下降" if delta < 0 else "上升"
@@ -253,4 +330,5 @@ class DriverOpsAgent:
             return f"当前推荐热区是 {stats.peak_zone}，重点覆盖 {', '.join(stats.top_hours)}，优先跑高需求走廊。"
         if intent == "policy_qa" and policy_answers:
             return f"结合规则库，当前建议：{policy_answers[0]}"
-        return f"这是一个通用经营建议问题，建议先聚焦高峰时段、热区覆盖和活动匹配。{' '.join(recommendations[:1])}"
+        recommendation_tip = f" {recommendations[0]}" if recommendations else ""
+        return f"这是一个通用经营建议问题，建议先聚焦高峰时段、热区覆盖和活动匹配。{recommendation_tip}".strip()

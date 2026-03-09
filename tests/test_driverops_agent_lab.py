@@ -89,3 +89,51 @@ def test_driverops_different_intents_get_different_plans() -> None:
     assert income_tools != campaign_tools
     assert "get_trip_stats" in income_tools
     assert "get_campaigns" in campaign_tools
+
+
+def test_driverops_agent_returns_grounded_answer_for_income_query() -> None:
+    agent = DriverOpsAgent()
+    response = agent.run(driver_id="driver-001", city="beijing", query="帮我解释下我今天收入为什么下降了")
+
+    assert response.answer_summary
+    assert response.answer == response.answer_summary
+    assert response.evidence_items
+    assert any("today_income=420.0" in item for item in response.evidence_items)
+    assert any("peak_zone=国贸-望京" in item for item in response.evidence_items)
+    assert any("国贸-望京" in item for item in response.recommendations)
+    assert response.risk_notes
+    assert any("接单率" in item for item in response.risk_notes)
+    assert response.stop_reason == "completed_with_full_evidence"
+
+
+
+
+def test_driverops_agent_marks_partial_evidence_when_no_campaign_matches() -> None:
+    agent = DriverOpsAgent()
+    response = agent.run(driver_id="driver-002", city="beijing", query="今天有什么活动适合我")
+
+    assert response.stop_reason == "completed_with_partial_evidence"
+    assert response.answer_summary
+    assert response.answer == response.answer_summary
+    assert response.evidence_items
+    assert any("no_campaign_matched" in item for item in response.evidence_items)
+    assert response.risk_notes
+    assert any("活动" in item for item in response.risk_notes)
+    assert response.recommendations
+
+def test_driverops_agent_falls_back_with_explicit_risks_when_tool_data_is_missing() -> None:
+    agent = DriverOpsAgent()
+
+    def broken_stats(_: str):
+        raise RuntimeError("trip stats unavailable")
+
+    agent.tools.get_trip_stats = broken_stats
+    response = agent.run(driver_id="driver-001", city="beijing", query="帮我解释下我今天收入为什么下降了")
+
+    assert response.stop_reason == "fallback_due_to_missing_data"
+    assert response.answer_summary
+    assert response.answer == response.answer_summary
+    assert response.evidence_items
+    assert any("trip stats unavailable" in item for item in response.evidence_items)
+    assert response.risk_notes
+    assert any("缺少" in item or "无法" in item for item in response.risk_notes)

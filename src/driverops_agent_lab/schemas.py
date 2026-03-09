@@ -71,7 +71,10 @@ class AgentResponse(BaseModel):
     city: str
     intent: str
     answer: str
+    answer_summary: str = ""
+    evidence_items: list[str] = Field(default_factory=list)
     recommendations: list[str] = Field(default_factory=list)
+    risk_notes: list[str] = Field(default_factory=list)
     tool_trace: list[ToolTrace] = Field(default_factory=list)
     memory_snapshot: list[str] = Field(default_factory=list)
     plan: list[PlanStep] = Field(default_factory=list)

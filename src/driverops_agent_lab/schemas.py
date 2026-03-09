@@ -37,6 +37,29 @@ class ToolTrace(BaseModel):
     result_summary: str
 
 
+class PlanStep(BaseModel):
+    step_id: int
+    goal: str
+    tool_name: str
+    reason: str
+    status: str = "pending"
+
+
+class Observation(BaseModel):
+    step_id: int
+    tool_name: str
+    summary: str
+    evidence: list[str] = Field(default_factory=list)
+    success: bool = True
+
+
+class ExecutionState(BaseModel):
+    intent: str
+    plan: list[PlanStep] = Field(default_factory=list)
+    observations: list[Observation] = Field(default_factory=list)
+    stop_reason: str | None = None
+
+
 class ChatRequest(BaseModel):
     driver_id: str
     city: str = "beijing"
@@ -51,3 +74,6 @@ class AgentResponse(BaseModel):
     recommendations: list[str] = Field(default_factory=list)
     tool_trace: list[ToolTrace] = Field(default_factory=list)
     memory_snapshot: list[str] = Field(default_factory=list)
+    plan: list[PlanStep] = Field(default_factory=list)
+    observations: list[Observation] = Field(default_factory=list)
+    stop_reason: str = "completed_with_full_evidence"

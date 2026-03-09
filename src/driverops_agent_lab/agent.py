@@ -1,7 +1,15 @@
 from __future__ import annotations
 
+from typing import Any
+
 from driverops_agent_lab.memory import ConversationMemoryStore
-from driverops_agent_lab.schemas import AgentResponse, ToolTrace
+from driverops_agent_lab.schemas import (
+    AgentResponse,
+    ExecutionState,
+    Observation,
+    PlanStep,
+    ToolTrace,
+)
 from driverops_agent_lab.tools import DriverOpsTools
 
 
@@ -21,63 +29,142 @@ class DriverOpsAgent:
             return "policy_qa"
         return "general_support"
 
+    def build_plan(self, intent: str, query: str, recent_memory: list[str]) -> list[PlanStep]:
+        del query, recent_memory
+        common_opening = PlanStep(
+            step_id=1,
+            goal="获取司机画像与偏好信息",
+            tool_name="get_driver_profile",
+            reason="任何经营建议都需要先确认司机分层、城市和常跑偏好。",
+        )
+
+        plans: dict[str, list[PlanStep]] = {
+            "income_explanation": [
+                common_opening,
+                PlanStep(
+                    step_id=2,
+                    goal="对比今日与昨日的关键经营指标",
+                    tool_name="get_trip_stats",
+                    reason="收入解释需要统计事实作为依据。",
+                ),
+                PlanStep(
+                    step_id=3,
+                    goal="生成收入解释与经营建议",
+                    tool_name="recommend_strategy",
+                    reason="基于画像和统计结果生成策略建议。",
+                ),
+            ],
+            "campaign_lookup": [
+                common_opening,
+                PlanStep(
+                    step_id=2,
+                    goal="查找符合司机分层和标签的活动",
+                    tool_name="get_campaigns",
+                    reason="活动推荐需要结合城市、司机等级与偏好标签。",
+                ),
+                PlanStep(
+                    step_id=3,
+                    goal="生成活动参与建议",
+                    tool_name="recommend_strategy",
+                    reason="将活动结果转成更可执行的建议。",
+                ),
+            ],
+            "hotspot_recommendation": [
+                common_opening,
+                PlanStep(
+                    step_id=2,
+                    goal="读取当前热区与高收益时段",
+                    tool_name="get_trip_stats",
+                    reason="热区建议需要实时经营统计支撑。",
+                ),
+                PlanStep(
+                    step_id=3,
+                    goal="生成热区行动建议",
+                    tool_name="recommend_strategy",
+                    reason="把热区信息转成下一步行动建议。",
+                ),
+            ],
+            "policy_qa": [
+                common_opening,
+                PlanStep(
+                    step_id=2,
+                    goal="查询规则知识库",
+                    tool_name="search_policy_kb",
+                    reason="规则问题必须给出规则依据。",
+                ),
+                PlanStep(
+                    step_id=3,
+                    goal="生成规则解释与后续动作",
+                    tool_name="recommend_strategy",
+                    reason="将规则结果转化为经营建议或申诉动作。",
+                ),
+            ],
+            "general_support": [
+                common_opening,
+                PlanStep(
+                    step_id=2,
+                    goal="生成通用经营建议",
+                    tool_name="recommend_strategy",
+                    reason="在证据不足时先给保守的经营建议。",
+                ),
+            ],
+        }
+        return [step.model_copy(deep=True) for step in plans[intent]]
+
     def run(self, driver_id: str, city: str, query: str) -> AgentResponse:
         intent = self.classify_intent(query)
         self.memory_store.add_query(driver_id, query)
-        profile = self.tools.get_driver_profile(driver_id)
+        recent_memory = self.memory_store.get_recent_queries(driver_id)
+        plan = self.build_plan(intent, query, recent_memory)
+        state = ExecutionState(intent=intent, plan=plan)
+        tool_trace: list[ToolTrace] = []
+        context: dict[str, Any] = {
+            "driver_id": driver_id,
+            "city": city,
+            "query": query,
+            "intent": intent,
+        }
 
-        tool_trace: list[ToolTrace] = [
-            ToolTrace(
-                tool_name="get_driver_profile",
-                arguments={"driver_id": driver_id},
-                result_summary=f"driver tier={profile.tier}, city={profile.city}, tags={','.join(profile.tags)}",
-            )
-        ]
-
-        stats = None
-        campaigns = None
-        policy_answers = None
-
-        if intent in {"income_explanation", "hotspot_recommendation"}:
-            stats = self.tools.get_trip_stats(driver_id)
-            tool_trace.append(
-                ToolTrace(
-                    tool_name="get_trip_stats",
-                    arguments={"driver_id": driver_id},
-                    result_summary=f"today_income={stats.today_income}, acceptance_rate={stats.acceptance_rate}, peak_zone={stats.peak_zone}",
+        for step in state.plan:
+            step.status = "running"
+            try:
+                observation, trace = self._execute_step(step, context)
+            except Exception as exc:
+                step.status = "failed"
+                state.stop_reason = "fallback_due_to_missing_data"
+                state.observations.append(
+                    Observation(
+                        step_id=step.step_id,
+                        tool_name=step.tool_name,
+                        summary=f"step failed: {exc}",
+                        evidence=[str(exc)],
+                        success=False,
+                    )
                 )
-            )
-
-        if intent == "campaign_lookup":
-            campaigns = self.tools.get_campaigns(city, profile)
-            tool_trace.append(
-                ToolTrace(
-                    tool_name="get_campaigns",
-                    arguments={"city": city, "driver_id": driver_id},
-                    result_summary=f"matched_campaigns={len(campaigns)}",
+                tool_trace.append(
+                    ToolTrace(
+                        tool_name=step.tool_name,
+                        arguments={"driver_id": driver_id, "city": city},
+                        result_summary=f"step failed: {exc}",
+                    )
                 )
-            )
+                break
 
-        if intent == "policy_qa":
-            policy_answers = self.tools.search_policy_kb(query)
-            tool_trace.append(
-                ToolTrace(
-                    tool_name="search_policy_kb",
-                    arguments={"query": query},
-                    result_summary=f"matched_rules={len(policy_answers)}",
-                )
-            )
+            step.status = "completed"
+            state.observations.append(observation)
+            tool_trace.append(trace)
 
-        recommendations = self.tools.recommend_strategy(intent, profile, stats, campaigns)
-        tool_trace.append(
-            ToolTrace(
-                tool_name="recommend_strategy",
-                arguments={"intent": intent, "driver_id": driver_id},
-                result_summary=f"recommendations={len(recommendations)}",
-            )
+        recommendations = context.get("recommendations", [])
+        answer = self._compose_answer(
+            intent=intent,
+            driver_id=driver_id,
+            stats=context.get("stats"),
+            campaigns=context.get("campaigns"),
+            policy_answers=context.get("policy_answers"),
+            recommendations=recommendations,
         )
 
-        answer = self._compose_answer(intent, profile.driver_id, stats, campaigns, policy_answers, recommendations)
+        stop_reason = state.stop_reason or self._derive_stop_reason(intent=intent, context=context)
         return AgentResponse(
             driver_id=driver_id,
             city=city,
@@ -85,8 +172,69 @@ class DriverOpsAgent:
             answer=answer,
             recommendations=recommendations,
             tool_trace=tool_trace,
-            memory_snapshot=self.memory_store.get_recent_queries(driver_id),
+            memory_snapshot=recent_memory,
+            plan=state.plan,
+            observations=state.observations,
+            stop_reason=stop_reason,
         )
+
+    def _execute_step(self, step: PlanStep, context: dict[str, Any]) -> tuple[Observation, ToolTrace]:
+        if step.tool_name == "get_driver_profile":
+            profile = self.tools.get_driver_profile(context["driver_id"])
+            context["profile"] = profile
+            summary = f"driver tier={profile.tier}, city={profile.city}, tags={','.join(profile.tags)}"
+            evidence = [f"preferred_hours={','.join(profile.preferred_hours)}", f"vehicle_type={profile.vehicle_type}"]
+            arguments = {"driver_id": context["driver_id"]}
+        elif step.tool_name == "get_trip_stats":
+            stats = self.tools.get_trip_stats(context["driver_id"])
+            context["stats"] = stats
+            summary = f"today_income={stats.today_income}, acceptance_rate={stats.acceptance_rate}, peak_zone={stats.peak_zone}"
+            evidence = [f"yesterday_income={stats.yesterday_income}", f"top_hours={','.join(stats.top_hours)}"]
+            arguments = {"driver_id": context["driver_id"]}
+        elif step.tool_name == "get_campaigns":
+            campaigns = self.tools.get_campaigns(context["city"], context["profile"])
+            context["campaigns"] = campaigns
+            summary = f"matched_campaigns={len(campaigns)}"
+            evidence = [item.title for item in campaigns[:2]] or ["no_campaign_matched"]
+            arguments = {"city": context["city"], "driver_id": context["driver_id"]}
+        elif step.tool_name == "search_policy_kb":
+            policy_answers = self.tools.search_policy_kb(context["query"])
+            context["policy_answers"] = policy_answers
+            summary = f"matched_rules={len(policy_answers)}"
+            evidence = policy_answers[:2]
+            arguments = {"query": context["query"]}
+        elif step.tool_name == "recommend_strategy":
+            recommendations = self.tools.recommend_strategy(
+                context["intent"],
+                context["profile"],
+                context.get("stats"),
+                context.get("campaigns"),
+            )
+            context["recommendations"] = recommendations
+            summary = f"recommendations={len(recommendations)}"
+            evidence = recommendations[:2]
+            arguments = {"intent": context["intent"], "driver_id": context["driver_id"]}
+        else:
+            raise ValueError(f"unsupported tool: {step.tool_name}")
+
+        observation = Observation(
+            step_id=step.step_id,
+            tool_name=step.tool_name,
+            summary=summary,
+            evidence=evidence,
+            success=True,
+        )
+        trace = ToolTrace(tool_name=step.tool_name, arguments=arguments, result_summary=summary)
+        return observation, trace
+
+    def _derive_stop_reason(self, intent: str, context: dict[str, Any]) -> str:
+        if intent == "campaign_lookup" and not context.get("campaigns"):
+            return "completed_with_partial_evidence"
+        if intent == "policy_qa":
+            policy_answers = context.get("policy_answers") or []
+            if policy_answers and policy_answers[0].startswith("未找到"):
+                return "completed_with_partial_evidence"
+        return "completed_with_full_evidence"
 
     def _compose_answer(self, intent: str, driver_id: str, stats, campaigns, policy_answers, recommendations: list[str]) -> str:
         if intent == "income_explanation" and stats is not None:

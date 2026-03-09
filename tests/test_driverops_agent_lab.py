@@ -49,3 +49,10 @@ def test_driverops_fastapi_chat_endpoint() -> None:
     payload = response.json()
     assert payload["intent"] == "campaign_lookup"
     assert payload["tool_trace"]
+
+
+def test_driverops_demo_page() -> None:
+    response = client.get("/demo")
+    assert response.status_code == 200
+    assert "DriverOps Agent Lab Demo" in response.text
+    assert "/chat" in response.text

@@ -47,3 +47,9 @@ curl -X POST http://127.0.0.1:8001/chat \
 - 增加离线评测与失败案例回放
 - 用检索或向量库替代当前规则数组
 - 把策略推荐升级为可配置 reward / ranking 模块
+
+## 新增能力
+
+- `driverops-agent-lab evaluate --outpath ...`：离线评测意图识别和工具覆盖率
+- `driverops-agent-lab export-training-data --outpath ...`：导出训练样例 JSONL
+- `GET /demo`：浏览器可交互演示页面

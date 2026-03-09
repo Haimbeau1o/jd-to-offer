@@ -11,6 +11,7 @@
 - 提供 `jd-to-offer` Codex skill 与本地可执行脚本
 - 内置一个滴滴 2026 Agent/供需策略 JD 示例
 - 提供 `DriverOps Agent Lab` 的可运行 FastAPI 项目骨架
+- 提供 `DriverOps Agent Lab` 的离线评测和训练样例导出能力
 
 ## 快速开始
 
@@ -62,14 +63,27 @@ python skills/jd-to-offer/scripts/validate_case.py cases/didi-agent-2026
 - 规则问答
 - 短期记忆
 - FastAPI 服务化
+- 离线评测
+- 训练样例导出
+- 浏览器 demo 页面
 
-运行方式：
+### 启动服务
+
+```bash
+PYTHONPATH=src python -m driverops_agent_lab.cli serve
+```
+
+或兼容旧入口：
 
 ```bash
 PYTHONPATH=src python -m driverops_agent_lab.app
 ```
 
-然后调用：
+### 打开 demo
+
+启动后访问：`http://127.0.0.1:8001/demo`
+
+### 调接口
 
 ```bash
 curl -X POST http://127.0.0.1:8001/chat \
@@ -77,15 +91,33 @@ curl -X POST http://127.0.0.1:8001/chat \
   -d '{"driver_id":"driver-001","city":"beijing","query":"今天有什么活动适合我"}'
 ```
 
-详细说明见 `docs/examples/2026-03-09-driverops-agent-lab.md`。
+### 跑离线评测
+
+```bash
+PYTHONPATH=src python -m driverops_agent_lab.cli evaluate \
+  --outpath examples/driverops/eval_report.json
+```
+
+### 导出训练样例
+
+```bash
+PYTHONPATH=src python -m driverops_agent_lab.cli export-training-data \
+  --outpath examples/driverops/training_samples.jsonl
+```
+
+### 示例产物
+
+- 评测结果：`examples/driverops/eval_report.json`
+- 训练样例：`examples/driverops/training_samples.jsonl`
+- 设计说明：`docs/examples/2026-03-09-driverops-agent-lab.md`
 
 ## 目录说明
 
 - `src/jd_offer/`：CLI、解析器、taxonomy、研究覆盖、内容生成、渲染与校验
-- `src/driverops_agent_lab/`：旗舰项目骨架
+- `src/driverops_agent_lab/`：旗舰项目骨架、评测与训练样例导出
 - `configs/`：能力 taxonomy、资源注册表、项目模板
 - `skills/jd-to-offer/`：Codex skill、本地脚本、参考文档
-- `examples/`：输入 JD 与联网研究覆盖样例
+- `examples/`：输入 JD、联网研究覆盖样例、DriverOps 示例产物
 - `cases/`：生成出的案例包
 - `docs/examples/`：人工撰写的滴滴蓝图与 DriverOps 项目说明
 
@@ -113,6 +145,10 @@ PYTHONPATH=src python -m jd_offer.cli generate \
 PYTHONPATH=src python -m jd_offer.cli scaffold-research \
   --input examples/didi_2026_agent_jd.md \
   --outpath /tmp/didi_research_template.yaml
+PYTHONPATH=src python -m driverops_agent_lab.cli evaluate \
+  --outpath /tmp/driverops_eval_report.json
+PYTHONPATH=src python -m driverops_agent_lab.cli export-training-data \
+  --outpath /tmp/driverops_training_samples.jsonl
 python skills/jd-to-offer/scripts/validate_case.py cases/didi-agent-2026
 python /Users/liuche/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/jd-to-offer
 ```

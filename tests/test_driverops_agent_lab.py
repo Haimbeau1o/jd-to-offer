@@ -137,3 +137,27 @@ def test_driverops_agent_falls_back_with_explicit_risks_when_tool_data_is_missin
     assert any("trip stats unavailable" in item for item in response.evidence_items)
     assert response.risk_notes
     assert any("缺少" in item or "无法" in item for item in response.risk_notes)
+
+
+def test_driverops_long_term_memory_tracks_preferences_and_recent_zone() -> None:
+    agent = DriverOpsAgent()
+
+    agent.run(driver_id="driver-001", city="beijing", query="今天有什么活动适合我")
+    agent.run(driver_id="driver-001", city="beijing", query="帮我看看热区建议")
+
+    long_term_memory = agent.memory_store.get_long_term_memory("driver-001")
+    assert "17:00-21:00" in long_term_memory.preferred_peak_windows
+    assert "晚高峰完单冲刺" in long_term_memory.preferred_campaigns
+    assert long_term_memory.recent_recommended_zones[-1] == "国贸-望京"
+
+
+def test_driverops_planner_and_response_use_long_term_memory() -> None:
+    agent = DriverOpsAgent()
+
+    agent.run(driver_id="driver-001", city="beijing", query="帮我看看热区建议")
+    response = agent.run(driver_id="driver-001", city="beijing", query="帮我看看热区建议")
+
+    assert any("长期记忆" in step.reason or "历史热区" in step.reason for step in response.plan)
+    assert any("preferred_peak_windows=" in item for item in response.memory_snapshot)
+    assert any("recent_recommended_zones=国贸-望京" in item for item in response.memory_snapshot)
+    assert any("历史偏好" in item or "最近推荐" in item for item in response.recommendations)

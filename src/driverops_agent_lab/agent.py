@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from driverops_agent_lab.memory import ConversationMemoryStore
+from driverops_agent_lab.memory import ConversationMemoryStore, DriverLongTermMemory
 from driverops_agent_lab.schemas import (
     AgentResponse,
     ExecutionState,
@@ -29,14 +29,39 @@ class DriverOpsAgent:
             return "policy_qa"
         return "general_support"
 
-    def build_plan(self, intent: str, query: str, recent_memory: list[str]) -> list[PlanStep]:
-        del query, recent_memory
+    def build_plan(
+        self,
+        intent: str,
+        query: str,
+        recent_memory: list[str],
+        long_term_memory: DriverLongTermMemory,
+    ) -> list[PlanStep]:
+        del query
+        recent_hint = " 结合最近对话延续当前问题上下文。" if len(recent_memory) > 1 else ""
+        memory_hint = self._build_memory_hint(long_term_memory)
         common_opening = PlanStep(
             step_id=1,
             goal="获取司机画像与偏好信息",
             tool_name="get_driver_profile",
-            reason="任何经营建议都需要先确认司机分层、城市和常跑偏好。",
+            reason=f"任何经营建议都需要先确认司机分层、城市和常跑偏好。{recent_hint}{memory_hint}".strip(),
         )
+
+        income_reason = "基于画像和统计结果生成策略建议。"
+        if long_term_memory.preferred_peak_windows:
+            windows = "、".join(long_term_memory.preferred_peak_windows[-2:])
+            income_reason = f"基于画像和统计结果生成策略建议，并优先参考长期记忆中的高峰时段偏好：{windows}。"
+
+        campaign_reason = "将活动结果转成更可执行的建议。"
+        if long_term_memory.preferred_campaigns:
+            campaign_reason = (
+                f"将活动结果转成更可执行的建议，并结合长期记忆中的活动偏好：{long_term_memory.preferred_campaigns[-1]}。"
+            )
+
+        hotspot_reason = "把热区信息转成下一步行动建议。"
+        if long_term_memory.recent_recommended_zones:
+            hotspot_reason = (
+                f"把热区信息转成下一步行动建议，并参考历史热区 {long_term_memory.recent_recommended_zones[-1]} 的长期记忆。"
+            )
 
         plans: dict[str, list[PlanStep]] = {
             "income_explanation": [
@@ -51,7 +76,7 @@ class DriverOpsAgent:
                     step_id=3,
                     goal="生成收入解释与经营建议",
                     tool_name="recommend_strategy",
-                    reason="基于画像和统计结果生成策略建议。",
+                    reason=income_reason,
                 ),
             ],
             "campaign_lookup": [
@@ -66,7 +91,7 @@ class DriverOpsAgent:
                     step_id=3,
                     goal="生成活动参与建议",
                     tool_name="recommend_strategy",
-                    reason="将活动结果转成更可执行的建议。",
+                    reason=campaign_reason,
                 ),
             ],
             "hotspot_recommendation": [
@@ -81,7 +106,7 @@ class DriverOpsAgent:
                     step_id=3,
                     goal="生成热区行动建议",
                     tool_name="recommend_strategy",
-                    reason="把热区信息转成下一步行动建议。",
+                    reason=hotspot_reason,
                 ),
             ],
             "policy_qa": [
@@ -115,7 +140,8 @@ class DriverOpsAgent:
         intent = self.classify_intent(query)
         self.memory_store.add_query(driver_id, query)
         recent_memory = self.memory_store.get_recent_queries(driver_id)
-        plan = self.build_plan(intent, query, recent_memory)
+        long_term_memory = self.memory_store.get_long_term_memory(driver_id)
+        plan = self.build_plan(intent, query, recent_memory, long_term_memory)
         state = ExecutionState(intent=intent, plan=plan)
         tool_trace: list[ToolTrace] = []
         context: dict[str, Any] = {
@@ -123,6 +149,7 @@ class DriverOpsAgent:
             "city": city,
             "query": query,
             "intent": intent,
+            "long_term_memory": long_term_memory,
         }
 
         for step in state.plan:
@@ -155,7 +182,9 @@ class DriverOpsAgent:
             state.observations.append(observation)
             tool_trace.append(trace)
 
-        recommendations = context.get("recommendations") or self._build_fallback_recommendations(context)
+        base_recommendations = context.get("recommendations") or self._build_fallback_recommendations(context)
+        recommendations = self._apply_memory_context(intent, base_recommendations, long_term_memory)
+        context["recommendations"] = recommendations
         stop_reason = state.stop_reason or self._derive_stop_reason(intent=intent, context=context)
         answer_summary = self._compose_answer_summary(
             intent=intent,
@@ -173,6 +202,7 @@ class DriverOpsAgent:
             observations=state.observations,
             stop_reason=stop_reason,
         )
+        self._update_long_term_memory(driver_id, context)
 
         return AgentResponse(
             driver_id=driver_id,
@@ -184,7 +214,7 @@ class DriverOpsAgent:
             recommendations=recommendations,
             risk_notes=risk_notes,
             tool_trace=tool_trace,
-            memory_snapshot=recent_memory,
+            memory_snapshot=self.memory_store.build_memory_snapshot(driver_id),
             plan=state.plan,
             observations=state.observations,
             stop_reason=stop_reason,
@@ -254,6 +284,59 @@ class DriverOpsAgent:
             context.get("stats"),
             context.get("campaigns"),
         )
+
+    def _build_memory_hint(self, long_term_memory: DriverLongTermMemory) -> str:
+        hints: list[str] = []
+        if long_term_memory.preferred_peak_windows:
+            hints.append("长期记忆中的高峰偏好")
+        if long_term_memory.preferred_campaigns:
+            hints.append("历史活动偏好")
+        if long_term_memory.recent_recommended_zones:
+            hints.append("最近推荐热区")
+        if not hints:
+            return ""
+        return f" 同时读取{ '、'.join(hints) }。"
+
+    def _apply_memory_context(
+        self,
+        intent: str,
+        recommendations: list[str],
+        long_term_memory: DriverLongTermMemory,
+    ) -> list[str]:
+        memory_aware_recommendations = list(recommendations)
+        if intent == "income_explanation" and long_term_memory.preferred_peak_windows:
+            self._append_unique_recommendation(
+                memory_aware_recommendations,
+                f"结合历史偏好，优先守住 {long_term_memory.preferred_peak_windows[-1]} 等高峰窗口，提升收入恢复速度。",
+            )
+        if intent == "campaign_lookup" and long_term_memory.preferred_campaigns:
+            self._append_unique_recommendation(
+                memory_aware_recommendations,
+                f"结合历史偏好，你最近更关注 {long_term_memory.preferred_campaigns[-1]} 这类活动，可优先检查同类激励。",
+            )
+        if intent == "hotspot_recommendation" and long_term_memory.recent_recommended_zones:
+            self._append_unique_recommendation(
+                memory_aware_recommendations,
+                f"最近推荐热区仍集中在 {long_term_memory.recent_recommended_zones[-1]}，说明与历史偏好一致，可优先连续覆盖。",
+            )
+        return memory_aware_recommendations
+
+    def _append_unique_recommendation(self, recommendations: list[str], recommendation: str) -> None:
+        if recommendation not in recommendations:
+            recommendations.append(recommendation)
+
+    def _update_long_term_memory(self, driver_id: str, context: dict[str, Any]) -> None:
+        profile = context.get("profile")
+        stats = context.get("stats")
+        campaigns = context.get("campaigns") or []
+
+        if profile is not None:
+            self.memory_store.remember_peak_windows(driver_id, profile.preferred_hours)
+        if stats is not None:
+            self.memory_store.remember_peak_windows(driver_id, stats.top_hours)
+            self.memory_store.remember_recommended_zone(driver_id, stats.peak_zone)
+        if campaigns:
+            self.memory_store.remember_campaigns(driver_id, [item.title for item in campaigns[:2]])
 
     def _collect_evidence_items(self, observations: list[Observation]) -> list[str]:
         evidence_items: list[str] = []

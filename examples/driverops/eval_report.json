@@ -2,6 +2,10 @@
   "total_cases": 4,
   "intent_accuracy": 0.75,
   "tool_coverage": 0.9166666666666666,
+  "plan_validity": 0.8333333333333334,
+  "step_execution_success_rate": 1.0,
+  "evidence_coverage": 1.0,
+  "fallback_rate": 0.0,
   "cases": [
     {
       "case_id": "income-001",
@@ -19,7 +23,37 @@
         "get_trip_stats",
         "recommend_strategy"
       ],
-      "tool_coverage": 1.0
+      "tool_coverage": 1.0,
+      "plan_validity": 1.0,
+      "step_execution_success_rate": 1.0,
+      "evidence_coverage": 1.0,
+      "stop_reason": "completed_with_full_evidence",
+      "step_results": [
+        {
+          "step_id": 1,
+          "tool_name": "get_driver_profile",
+          "status": "completed",
+          "success": true,
+          "evidence_count": 2,
+          "summary": "driver tier=gold, city=beijing, tags=morning_peak,airport_pref"
+        },
+        {
+          "step_id": 2,
+          "tool_name": "get_trip_stats",
+          "status": "completed",
+          "success": true,
+          "evidence_count": 2,
+          "summary": "today_income=420.0, acceptance_rate=0.71, peak_zone=国贸-望京"
+        },
+        {
+          "step_id": 3,
+          "tool_name": "recommend_strategy",
+          "status": "completed",
+          "success": true,
+          "evidence_count": 2,
+          "summary": "recommendations=3"
+        }
+      ]
     },
     {
       "case_id": "campaign-001",
@@ -37,7 +71,37 @@
         "get_campaigns",
         "recommend_strategy"
       ],
-      "tool_coverage": 1.0
+      "tool_coverage": 1.0,
+      "plan_validity": 1.0,
+      "step_execution_success_rate": 1.0,
+      "evidence_coverage": 1.0,
+      "stop_reason": "completed_with_full_evidence",
+      "step_results": [
+        {
+          "step_id": 1,
+          "tool_name": "get_driver_profile",
+          "status": "completed",
+          "success": true,
+          "evidence_count": 2,
+          "summary": "driver tier=gold, city=beijing, tags=morning_peak,airport_pref"
+        },
+        {
+          "step_id": 2,
+          "tool_name": "get_campaigns",
+          "status": "completed",
+          "success": true,
+          "evidence_count": 2,
+          "summary": "matched_campaigns=2"
+        },
+        {
+          "step_id": 3,
+          "tool_name": "recommend_strategy",
+          "status": "completed",
+          "success": true,
+          "evidence_count": 2,
+          "summary": "recommendations=2"
+        }
+      ]
     },
     {
       "case_id": "hotspot-001",
@@ -55,7 +119,37 @@
         "get_trip_stats",
         "recommend_strategy"
       ],
-      "tool_coverage": 1.0
+      "tool_coverage": 1.0,
+      "plan_validity": 1.0,
+      "step_execution_success_rate": 1.0,
+      "evidence_coverage": 1.0,
+      "stop_reason": "completed_with_full_evidence",
+      "step_results": [
+        {
+          "step_id": 1,
+          "tool_name": "get_driver_profile",
+          "status": "completed",
+          "success": true,
+          "evidence_count": 2,
+          "summary": "driver tier=gold, city=beijing, tags=morning_peak,airport_pref"
+        },
+        {
+          "step_id": 2,
+          "tool_name": "get_trip_stats",
+          "status": "completed",
+          "success": true,
+          "evidence_count": 2,
+          "summary": "today_income=420.0, acceptance_rate=0.71, peak_zone=国贸-望京"
+        },
+        {
+          "step_id": 3,
+          "tool_name": "recommend_strategy",
+          "status": "completed",
+          "success": true,
+          "evidence_count": 1,
+          "summary": "recommendations=1"
+        }
+      ]
     },
     {
       "case_id": "policy-001",
@@ -73,7 +167,37 @@
         "get_campaigns",
         "recommend_strategy"
       ],
-      "tool_coverage": 0.6666666666666666
+      "tool_coverage": 0.6666666666666666,
+      "plan_validity": 0.3333333333333333,
+      "step_execution_success_rate": 1.0,
+      "evidence_coverage": 1.0,
+      "stop_reason": "completed_with_full_evidence",
+      "step_results": [
+        {
+          "step_id": 1,
+          "tool_name": "get_driver_profile",
+          "status": "completed",
+          "success": true,
+          "evidence_count": 2,
+          "summary": "driver tier=gold, city=beijing, tags=morning_peak,airport_pref"
+        },
+        {
+          "step_id": 2,
+          "tool_name": "get_campaigns",
+          "status": "completed",
+          "success": true,
+          "evidence_count": 2,
+          "summary": "matched_campaigns=2"
+        },
+        {
+          "step_id": 3,
+          "tool_name": "recommend_strategy",
+          "status": "completed",
+          "success": true,
+          "evidence_count": 2,
+          "summary": "recommendations=2"
+        }
+      ]
     }
   ]
 }

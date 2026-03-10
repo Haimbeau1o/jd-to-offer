@@ -61,6 +61,28 @@ def test_driverops_export_training_data(tmp_path: Path) -> None:
     result = runner.invoke(app, ["export-training-data", "--outpath", str(outpath)])
     assert result.exit_code == 0
     assert outpath.exists()
-    text = outpath.read_text(encoding="utf-8")
-    assert '"messages"' in text
-    assert '"metadata"' in text
+
+    lines = [json.loads(line) for line in outpath.read_text(encoding="utf-8").splitlines() if line.strip()]
+    assert lines
+    first = lines[0]
+    assert "messages" in first
+    assert "metadata" in first
+    assert "plan" in first
+    assert "observations" in first
+    assert "grounded_answer" in first
+    assert "stop_reason" in first
+    assert "training_tags" in first["metadata"]
+
+
+def test_driverops_export_failure_review(tmp_path: Path) -> None:
+    outpath = tmp_path / "failure_review.json"
+    result = runner.invoke(app, ["export-failure-review", "--outpath", str(outpath)])
+    assert result.exit_code == 0
+    assert outpath.exists()
+
+    payload = json.loads(outpath.read_text(encoding="utf-8"))
+    assert "summary" in payload
+    assert "failures" in payload
+    assert payload["summary"]["total_cases"] >= 1
+    assert isinstance(payload["summary"]["taxonomy_counts"], dict)
+    assert any("taxonomy" in item for item in payload["failures"])

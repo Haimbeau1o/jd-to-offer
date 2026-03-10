@@ -1,0 +1,80 @@
+{
+  "summary": {
+    "total_cases": 5,
+    "failed_cases": 3,
+    "taxonomy_counts": {
+      "planning_error": 1,
+      "missing_evidence": 1,
+      "wrong_tool_choice": 2,
+      "weak_recommendation": 2,
+      "fallback_triggered": 1
+    }
+  },
+  "failures": [
+    {
+      "case_id": "hotspot-001",
+      "query": "帮我看看热区建议",
+      "expected_intent": "hotspot_recommendation",
+      "predicted_intent": "hotspot_recommendation",
+      "stop_reason": "completed_with_full_evidence",
+      "taxonomy": [
+        "weak_recommendation"
+      ],
+      "metrics": {
+        "plan_validity": 1.0,
+        "tool_coverage": 1.0,
+        "step_execution_success_rate": 1.0,
+        "evidence_coverage": 1.0
+      },
+      "notes": [
+        "recommend_strategy 输出偏弱，可补充更具体的行动建议或奖励信息。"
+      ]
+    },
+    {
+      "case_id": "policy-001",
+      "query": "完单率规则会影响活动资格吗",
+      "expected_intent": "policy_qa",
+      "predicted_intent": "campaign_lookup",
+      "stop_reason": "completed_with_full_evidence",
+      "taxonomy": [
+        "planning_error",
+        "wrong_tool_choice"
+      ],
+      "metrics": {
+        "plan_validity": 0.3333333333333333,
+        "tool_coverage": 0.6666666666666666,
+        "step_execution_success_rate": 1.0,
+        "evidence_coverage": 1.0
+      },
+      "notes": [
+        "当前案例的 intent 或计划步骤与预期存在偏差，需要检查 planner 的规则或 prompt。",
+        "工具覆盖不足，说明 planner 可能选择了错误工具或遗漏了关键步骤。"
+      ]
+    },
+    {
+      "case_id": "income-fallback-001",
+      "query": "帮我解释下我今天收入为什么下降了",
+      "expected_intent": "income_explanation",
+      "predicted_intent": "income_explanation",
+      "stop_reason": "fallback_due_to_missing_data",
+      "taxonomy": [
+        "wrong_tool_choice",
+        "missing_evidence",
+        "fallback_triggered",
+        "weak_recommendation"
+      ],
+      "metrics": {
+        "plan_validity": 1.0,
+        "tool_coverage": 0.6666666666666666,
+        "step_execution_success_rate": 0.3333333333333333,
+        "evidence_coverage": 0.6666666666666666
+      },
+      "notes": [
+        "工具覆盖不足，说明 planner 可能选择了错误工具或遗漏了关键步骤。",
+        "证据覆盖不完整，回答需要补足 observation 或增加保守提示。",
+        "recommend_strategy 输出偏弱，可补充更具体的行动建议或奖励信息。",
+        "触发了 fallback，建议将该路径单独沉淀为失败样例和奖励惩罚数据。"
+      ]
+    }
+  ]
+}

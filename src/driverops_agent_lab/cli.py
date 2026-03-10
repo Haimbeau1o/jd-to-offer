@@ -7,7 +7,7 @@ import uvicorn
 
 from driverops_agent_lab.app import app as fastapi_app
 from driverops_agent_lab.eval import run_evaluation, write_eval_report
-from driverops_agent_lab.training_data import export_training_samples
+from driverops_agent_lab.training_data import export_failure_review, export_training_samples
 
 cli = typer.Typer(help="DriverOps Agent Lab commands.")
 
@@ -35,6 +35,15 @@ def export_training_data(
 ) -> None:
     export_training_samples(outpath)
     typer.echo(f"Wrote training data to {outpath}")
+
+
+@cli.command("export-failure-review")
+def export_failure_review_command(
+    outpath: Path = typer.Option(..., file_okay=True, dir_okay=False, help="Where to write the failure review JSON report."),
+) -> None:
+    export_failure_review(outpath)
+    typer.echo(f"Wrote failure review to {outpath}")
+
 
 
 def main() -> None:

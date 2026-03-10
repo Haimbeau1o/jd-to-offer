@@ -17,6 +17,7 @@ Use this skill to turn a JD into a reusable preparation bundle. Combine local de
 4. Run `python skills/jd-to-offer/scripts/run_case.py generate ... --resource-overrides <path>` to inject the latest resources into the output bundle.
 5. Inspect the generated competency map and project blueprint. If the JD is domain-specific, refine the emphasis manually instead of rewriting the whole bundle.
 6. Validate the output folder with `skills/jd-to-offer/scripts/validate_case.py`.
+7. If the flagship project in this repo is part of the delivery, refresh its reusable artifacts with `driverops_agent_lab.cli evaluate`, `export-training-data`, and `export-failure-review`.
 
 ## Required Output Bundle
 
@@ -48,10 +49,23 @@ Load `references/output_contract.md` if you need the exact file contract.
 - Keep the scope achievable in 2-6 weeks unless the user asks for a larger plan.
 - Emphasize metrics, failure cases, and evaluation, not just architecture diagrams.
 
+## Flagship Project Artifact Rules
+
+When the generated case uses `DriverOps Agent Lab` as the flagship project, also treat these files as reusable delivery artifacts:
+
+- `examples/driverops/eval_report.json`: planner-aware evaluation snapshot
+- `examples/driverops/training_samples.jsonl`: trace-rich SFT / preference seed data
+- `examples/driverops/failure_review.json`: failure taxonomy and review-ready error cases
+
+Do not regenerate them for unrelated JD-only requests. Refresh them when the user explicitly wants the runnable flagship project, the project demo to stay current, or the training/evaluation loop to be part of the deliverable.
+
 ## Scripts
 
 - `scripts/run_case.py`: wrapper around the local CLI to scaffold research templates and generate a case bundle
 - `scripts/validate_case.py`: verify the output folder contains the required files
+- `driverops_agent_lab.cli evaluate`: refresh planner-aware evaluation artifacts for the flagship project
+- `driverops_agent_lab.cli export-training-data`: export trace-rich training samples
+- `driverops_agent_lab.cli export-failure-review`: export failure taxonomy and review artifacts
 
 ## References
 

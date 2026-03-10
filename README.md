@@ -10,8 +10,21 @@
 - 支持把 agent 联网核对后的研究结果通过 `resource_overrides` 注入生成链路
 - 提供 `jd-to-offer` Codex skill 与本地可执行脚本
 - 内置一个滴滴 2026 Agent/供需策略 JD 示例
-- 提供 `DriverOps Agent Lab` 的可运行 FastAPI 项目骨架
-- 提供 `DriverOps Agent Lab` 的离线评测和训练样例导出能力
+- 提供 `DriverOps Agent Lab` 作为旗舰项目：planner/ReAct、grounded answer、长短期记忆、评测与训练导出
+
+## 这个项目到底包含什么
+
+这个仓库其实是 **两层结构**：
+
+- `jd_offer`：把一个 JD 变成可复用的准备方案，产出知识体系、资源包、主项目蓝图和面试素材
+- `driverops_agent_lab`：把蓝图里的“主项目”真正落成一个可运行、可评测、可导出训练数据的旗舰 demo
+
+可以把它理解成：
+
+- **上层是求职/项目规划引擎**：负责“这个 JD 需要哪些能力、该学什么、该做什么项目”
+- **下层是项目样板间**：负责“如果真的做这个项目，系统怎么搭、怎么评测、怎么沉淀训练数据”
+
+所以这个仓库既能回答“我要学什么”，也能回答“我要做成什么样”。
 
 ## 快速开始
 
@@ -55,16 +68,42 @@ python skills/jd-to-offer/scripts/validate_case.py cases/didi-agent-2026
 
 ## `DriverOps Agent Lab`
 
-旗舰项目骨架位于 `src/driverops_agent_lab/`，当前已经提供：
+旗舰项目骨架位于 `src/driverops_agent_lab/`，它现在不只是一个 API demo，而是一个**可讲技能、可跑流程、可导出数据**的项目样板。
+
+### 它主要负责什么
+
+- 把 JD 里关于 Agent / LLM / RL 相关的关键能力，落成一个能演示的司机经营助手
+- 让你在面试里不仅能讲“架构图”，还能讲 planner、memory、evaluation、training data flywheel
+- 给后续 SFT / preference / reward 方向预留出数据沉淀接口
+
+### 它体现哪些技能
+
+- **Agent 设计**：intent router、planner → executor、grounded answer、fallback
+- **工具使用**：画像、经营统计、活动查询、规则检索、策略生成
+- **记忆设计**：短期 query history + 轻量长期偏好记忆
+- **评测能力**：intent / tool coverage + planner-aware metrics
+- **训练闭环**：trace-rich training samples + failure review taxonomy
+- **工程化能力**：FastAPI、Typer CLI、pytest、可复现样例产物
+
+### 当前模块分层
+
+- **在线链路**：`/chat` + planner/executor agent
+- **记忆层**：recent queries、preferred peak windows、preferred campaigns、recent recommended zones
+- **评测层**：`eval_report.json`，覆盖 `plan_validity`、`step_execution_success_rate`、`evidence_coverage`、`fallback_rate`
+- **训练层**：`training_samples.jsonl` + `failure_review.json`
+
+### 当前已经提供
 
 - 收入解释
 - 活动推荐
 - 热区建议
 - 规则问答
-- 短期记忆
+- grounded answer
+- 短期记忆 + 轻量长期记忆
 - FastAPI 服务化
-- 离线评测
-- 训练样例导出
+- planner-aware 离线评测
+- trace-rich 训练样例导出
+- failure review / taxonomy 导出
 - 浏览器 demo 页面
 
 ### 启动服务
@@ -109,6 +148,7 @@ PYTHONPATH=src python -m driverops_agent_lab.cli export-training-data \
 
 - 评测结果：`examples/driverops/eval_report.json`
 - 训练样例：`examples/driverops/training_samples.jsonl`
+- 失败归因：`examples/driverops/failure_review.json`
 - 设计说明：`docs/examples/2026-03-09-driverops-agent-lab.md`
 
 ## 目录说明
@@ -149,6 +189,8 @@ PYTHONPATH=src python -m driverops_agent_lab.cli evaluate \
   --outpath /tmp/driverops_eval_report.json
 PYTHONPATH=src python -m driverops_agent_lab.cli export-training-data \
   --outpath /tmp/driverops_training_samples.jsonl
+PYTHONPATH=src python -m driverops_agent_lab.cli export-failure-review \
+  --outpath /tmp/driverops_failure_review.json
 python skills/jd-to-offer/scripts/validate_case.py cases/didi-agent-2026
 python /Users/liuche/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/jd-to-offer
 ```

@@ -21,6 +21,7 @@ dependencies = [
 [project.scripts]
 jd-offer = "jd_offer.cli:main"
 driverops-agent-lab = "driverops_agent_lab.cli:main"
+jd2offer-harness = "jd2offer_harness.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

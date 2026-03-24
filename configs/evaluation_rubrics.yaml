@@ -1,0 +1,16 @@
+rubrics:
+  - name: resume_grounding_score
+    description: 生成内容是否能够追溯到简历证据，或明确标记为延展项目设计。
+    threshold: 0.8
+  - name: jd_coverage_score
+    description: 生成项目是否覆盖目标 JD 的核心能力项。
+    threshold: 0.8
+  - name: project_coherence_score
+    description: 项目模块、里程碑、指标与演讲主线是否围绕同一 thesis。
+    threshold: 0.75
+  - name: visual_completeness_score
+    description: 是否包含架构图、demo flow 等可展示资产。
+    threshold: 0.7
+  - name: presentation_readiness_score
+    description: 是否支持 3 分钟和 10 分钟两个层次的讲解。
+    threshold: 0.75

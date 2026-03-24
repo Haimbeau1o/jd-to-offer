@@ -1,0 +1,43 @@
+archetypes:
+  - id: vertical_agent_system
+    name: Vertical Agent System
+    summary: 面向明确业务场景的垂域 Agent 系统，强调工具调用、记忆、评测与业务闭环。
+    best_fit_jd_signals:
+      - agent
+      - 工具调用
+      - 记忆
+      - 评测
+    best_fit_resume_signals:
+      - Python
+      - FastAPI
+      - LLM
+    modules:
+      - Intent Router
+      - Tool Layer
+      - Memory Layer
+      - Evaluator
+    visuals:
+      - architecture_diagram
+      - demo_flow
+  - id: ai_backend_platform
+    name: AI Backend Platform
+    summary: 后端平台为主、AI 为增强层的项目 archetype，强调服务抽象、可靠性与运维可观测性。
+    best_fit_jd_signals:
+      - 平台
+      - 后端
+      - 工程化
+      - 数据服务
+    best_fit_resume_signals:
+      - Go
+      - Python
+      - MySQL
+      - Redis
+    modules:
+      - API Gateway
+      - Workflow Service
+      - Data Service
+      - AI Sidecar
+    visuals:
+      - system_context
+      - operator_flow
+

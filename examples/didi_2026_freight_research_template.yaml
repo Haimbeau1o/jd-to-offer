@@ -1,0 +1,7 @@
+case_slug: null
+verified_on: '2026-04-10'
+notes: 根据《滴滴 2026 届货运算法工程师（供需策略）》生成的联网研究模板。先用 agent 浏览官方文档/一手论文，再把资源填回这里。
+top_competencies:
+- ride_hailing_supply_demand
+- rl_and_reward_design
+resources: []

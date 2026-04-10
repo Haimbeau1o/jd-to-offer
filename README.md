@@ -10,6 +10,11 @@
 如果你只想回答“这个岗位到底要我补什么、做什么项目”，用上层就够。
 如果你还想回答“这个项目我真的能跑起来、能讲评测闭环吗”，再继续用下层。
 
+## Related Resume Source
+
+- 简历 LaTeX 源码不在本仓库内，在 `/Volumes/passport/简历/latex-resume`
+- 供 Codex / agent 使用的对接说明见 `docs/resume_latex_reference.md`
+
 ## 你能用它做什么
 
 - 输入一份 JD Markdown，生成一套固定结构的 case bundle
@@ -157,6 +162,35 @@ PYTHONPATH=src python -m driverops_agent_lab.cli export-failure-review \
 - 这个项目如果真的做出来，系统长什么样？
 - 工具调用、memory、evaluation、training data 怎么串起来？
 - 面试里我能展示哪些可运行证据？
+
+### 新增中的 `commentops_agent_lab`
+
+面向评论审核与内容治理场景的新框架骨架已经开始补进仓库，目标是承接类似抖音 / TikTok CQC、Trust & Safety、内容审核 Agent 方向的 JD。
+
+当前阶段已经具备：
+
+- 评论审核 policy schema、风险信号与历史 case
+- `pass / reject / escalate` 三态审核 workflow
+- reviewer queue routing 与 guarded auto-pass
+- 相似 case 检索、运营建议与业务影响摘要
+- 离线评测、SFT / preference / failure review 数据导出
+- FastAPI + CLI + review workbench demo
+
+快速试跑：
+
+```bash
+PYTHONPATH=src python -m commentops_agent_lab.cli evaluate \
+  --outpath examples/commentops/eval/baseline_eval_report.json
+
+PYTHONPATH=src python -m commentops_agent_lab.cli export-sft \
+  --outpath examples/commentops/eval/sft_samples.jsonl
+
+PYTHONPATH=src python -m commentops_agent_lab.cli export-preferences \
+  --outpath examples/commentops/eval/preference_pairs.jsonl
+
+PYTHONPATH=src python -m commentops_agent_lab.cli export-failure-review \
+  --outpath examples/commentops/eval/failure_review.json
+```
 
 ### 启动服务
 

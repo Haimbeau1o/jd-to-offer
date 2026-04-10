@@ -21,6 +21,7 @@ dependencies = [
 [project.scripts]
 jd-offer = "jd_offer.cli:main"
 driverops-agent-lab = "driverops_agent_lab.cli:main"
+commentops-agent-lab = "commentops_agent_lab.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

@@ -1,0 +1,123 @@
+{
+  "total_cases": 5,
+  "action_accuracy": 1.0,
+  "policy_grounding_rate": 1.0,
+  "escalation_precision": 1.0,
+  "auto_pass_rate": 0.4,
+  "auto_reject_rate": 0.2,
+  "human_review_rate": 0.4,
+  "queue_routing_accuracy": 1.0,
+  "average_confidence": 0.766,
+  "cases": [
+    {
+      "case_id": "comment-pass-001",
+      "expected_action": "pass",
+      "predicted_action": "pass",
+      "expected_category": "benign_conversation",
+      "predicted_category": "benign_conversation",
+      "expected_queue": "auto_pass_archive",
+      "predicted_queue": "auto_pass_archive",
+      "action_correct": true,
+      "queue_correct": true,
+      "policy_grounded": true,
+      "escalated": false,
+      "confidence": 0.86,
+      "used_tools": [
+        "load_comment_context",
+        "retrieve_policy_clauses",
+        "search_similar_cases",
+        "synthesize_risk_signals",
+        "aggregate_decision",
+        "route_review_queue"
+      ]
+    },
+    {
+      "case_id": "comment-harm-001",
+      "expected_action": "reject",
+      "predicted_action": "reject",
+      "expected_category": "violent_threat",
+      "predicted_category": "violent_threat",
+      "expected_queue": "priority_threat_queue",
+      "predicted_queue": "priority_threat_queue",
+      "action_correct": true,
+      "queue_correct": true,
+      "policy_grounded": true,
+      "escalated": false,
+      "confidence": 0.98,
+      "used_tools": [
+        "load_comment_context",
+        "retrieve_policy_clauses",
+        "search_similar_cases",
+        "synthesize_risk_signals",
+        "aggregate_decision",
+        "route_review_queue"
+      ]
+    },
+    {
+      "case_id": "comment-ambiguous-001",
+      "expected_action": "escalate",
+      "predicted_action": "escalate",
+      "expected_category": "contextual_abuse",
+      "predicted_category": "contextual_abuse",
+      "expected_queue": "context_review_queue",
+      "predicted_queue": "context_review_queue",
+      "action_correct": true,
+      "queue_correct": true,
+      "policy_grounded": true,
+      "escalated": true,
+      "confidence": 0.62,
+      "used_tools": [
+        "load_comment_context",
+        "retrieve_policy_clauses",
+        "search_similar_cases",
+        "synthesize_risk_signals",
+        "aggregate_decision",
+        "route_review_queue"
+      ]
+    },
+    {
+      "case_id": "comment-context-history-001",
+      "expected_action": "escalate",
+      "predicted_action": "escalate",
+      "expected_category": "contextual_abuse",
+      "predicted_category": "contextual_abuse",
+      "expected_queue": "context_review_queue",
+      "predicted_queue": "context_review_queue",
+      "action_correct": true,
+      "queue_correct": true,
+      "policy_grounded": true,
+      "escalated": true,
+      "confidence": 0.62,
+      "used_tools": [
+        "load_comment_context",
+        "retrieve_policy_clauses",
+        "search_similar_cases",
+        "synthesize_risk_signals",
+        "aggregate_decision",
+        "route_review_queue"
+      ]
+    },
+    {
+      "case_id": "comment-shadow-001",
+      "expected_action": "pass",
+      "predicted_action": "pass",
+      "expected_category": "benign_conversation",
+      "predicted_category": "benign_conversation",
+      "expected_queue": "shadow_audit_queue",
+      "predicted_queue": "shadow_audit_queue",
+      "action_correct": true,
+      "queue_correct": true,
+      "policy_grounded": true,
+      "escalated": false,
+      "confidence": 0.75,
+      "used_tools": [
+        "load_comment_context",
+        "retrieve_policy_clauses",
+        "search_similar_cases",
+        "synthesize_risk_signals",
+        "aggregate_decision",
+        "route_review_queue"
+      ]
+    }
+  ]
+}

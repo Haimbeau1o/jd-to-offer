@@ -1,0 +1,55 @@
+{
+  "summary": {
+    "total_cases": 5,
+    "items_with_flags": 3,
+    "taxonomy_counts": {
+      "queue_mismatch": 0,
+      "manual_review_pressure": 2,
+      "shadow_audit_candidate": 1,
+      "appeal_sensitive": 3
+    },
+    "queue_routing_accuracy": 1.0,
+    "human_review_rate": 0.4
+  },
+  "items": [
+    {
+      "case_id": "comment-ambiguous-001",
+      "predicted_action": "escalate",
+      "predicted_queue": "context_review_queue",
+      "taxonomy": [
+        "manual_review_pressure",
+        "appeal_sensitive"
+      ],
+      "notes": [
+        "该 case 进入人工复核，会直接影响 reviewer 吞吐和 SLA。",
+        "该 case 更适合进入 preference / appeal 数据池，用于后续策略优化。"
+      ]
+    },
+    {
+      "case_id": "comment-context-history-001",
+      "predicted_action": "escalate",
+      "predicted_queue": "context_review_queue",
+      "taxonomy": [
+        "manual_review_pressure",
+        "appeal_sensitive"
+      ],
+      "notes": [
+        "该 case 进入人工复核，会直接影响 reviewer 吞吐和 SLA。",
+        "该 case 更适合进入 preference / appeal 数据池，用于后续策略优化。"
+      ]
+    },
+    {
+      "case_id": "comment-shadow-001",
+      "predicted_action": "pass",
+      "predicted_queue": "shadow_audit_queue",
+      "taxonomy": [
+        "shadow_audit_candidate",
+        "appeal_sensitive"
+      ],
+      "notes": [
+        "该 case 体现了 guarded auto-pass 边界，适合回灌抽样复查策略。",
+        "该 case 更适合进入 preference / appeal 数据池，用于后续策略优化。"
+      ]
+    }
+  ]
+}

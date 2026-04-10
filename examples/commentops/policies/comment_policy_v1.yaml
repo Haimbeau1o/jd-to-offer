@@ -1,0 +1,66 @@
+clauses:
+  - clause_id: benign-default
+    category: benign_conversation
+    title: 普通交流
+    severity: low
+    decision: pass
+    description: 未命中明显风险词和高风险行为模式的普通评论。
+    queue_hint: auto_pass_archive
+    keywords: []
+    examples:
+      - 这条内容很有帮助
+      - 谢谢分享
+    reviewer_guidance:
+      - 默认可自动放行，但高举报量或高风险用户可进入抽样复查。
+  - clause_id: harassment-001
+    category: harassment_abuse
+    title: 侮辱谩骂
+    severity: high
+    decision: reject
+    description: 对个人或群体进行明确侮辱、辱骂或恶意攻击。
+    queue_hint: abuse_enforcement_queue
+    keywords:
+      - 垃圾
+      - 废物
+      - 傻逼
+    examples:
+      - 你就是个垃圾
+      - 真是废物
+    reviewer_guidance:
+      - 记录命中词和上下文。
+      - 如存在误伤争议，进入申诉复核。
+  - clause_id: violent-001
+    category: violent_threat
+    title: 暴力威胁
+    severity: critical
+    decision: reject
+    description: 包含直接伤害、死亡威胁或严重暴力表达。
+    queue_hint: priority_threat_queue
+    keywords:
+      - 去死
+      - 杀了你
+      - 弄死你
+    examples:
+      - 你给我去死
+      - 我迟早杀了你
+    reviewer_guidance:
+      - 进入高优先级处置队列。
+      - 保留证据片段和历史风险信息。
+  - clause_id: contextual-001
+    category: contextual_abuse
+    title: 上下文敏感表达
+    severity: medium
+    decision: escalate
+    description: 需要结合上下文、语气或会话历史才能判断是否违规的模糊表达。
+    queue_hint: context_review_queue
+    keywords:
+      - 真行
+      - 有病
+      - 该死
+      - 会说话
+    examples:
+      - 你可真行啊
+      - 这人真该死
+    reviewer_guidance:
+      - 优先查看上下文、历史互动和举报原因。
+      - 不建议在上下文不足时自动拒绝。

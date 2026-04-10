@@ -1,0 +1,4 @@
+interface:
+  display_name: "JD Resume LaTeX"
+  short_description: "Adapt resume proofs to a JD and sync to LaTeX."
+  default_prompt: "Use $jd-resume-latex to analyze this JD, package the strongest truthful experience, and produce LaTeX-ready resume edits."
